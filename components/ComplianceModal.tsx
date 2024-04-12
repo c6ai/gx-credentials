@@ -19,6 +19,9 @@ import Step from "@mui/material/Step";
 import StepLabel from "@mui/material/StepLabel";
 import ArrowDownwardIcon from "@mui/icons-material/ArrowDownward";
 import ArrowDropDownIcon from "@mui/icons-material/ArrowDropDown";
+import { unSigned_LRN, unsigned_TC } from "./Credentials_sample";
+import { issueCredential } from "@/lib/credentials";
+import { useSession } from "next-auth/react";
 
 const steps = ["Select VCs", "Submit VP"];
 
@@ -30,6 +33,7 @@ export function ComplianceModal({ credential }: any) {
     termsAndConditions: false,
     legalRegistration: false,
   });
+  const { data: session } = useSession();
 
   useEffect(() => {
     if (
@@ -57,7 +61,7 @@ export function ComplianceModal({ credential }: any) {
     overflow: "auto",
   };
 
-  const handleCheckboxChange = (event) => {
+  const handleCheckboxChange = (event: any) => {
     setCheckedState({
       ...checkedState,
       [event.target.name]: event.target.checked,
@@ -115,7 +119,7 @@ export function ComplianceModal({ credential }: any) {
             {activeStep === steps.length ? (
               <React.Fragment>
                 <Typography sx={{ mt: 2, mb: 1 }}>
-                  Your reuqest has been submitted successfully.
+                  Your request has been submitted successfully.
                 </Typography>
                 <Box sx={{ display: "flex", flexDirection: "row", pt: 2 }}>
                   <Box sx={{ flex: "1 1 auto" }} />
@@ -138,6 +142,7 @@ export function ComplianceModal({ credential }: any) {
                     activeStep={activeStep}
                     handleBack={handleBack}
                     handleNext={handleNext}
+                    accountId={session?.user.pkh}
                   />
                 )}
               </React.Fragment>
@@ -268,7 +273,32 @@ const FirstStep = ({
   );
 };
 
-const SecondStep = ({ activeStep, handleBack, handleNext }: any) => {
+const handleSign = async (accountId: string) => {
+  console.log("Signing the request");
+  // const unsignedLRN = unSigned_LRN;
+  let signedLRN, signedTC;
+
+  try {
+    // signedLRN = await issueCredential(unsignedLRN);
+    const unsignedTC: any = {
+      ...unsigned_TC,
+      credentialSubject: {
+        ...unsigned_TC.credentialSubject,
+        id: "did:pkh:tz:" + accountId,
+      },
+    };
+    console.log("Unsigned TC: ", unsignedTC);
+
+    signedTC = await issueCredential(unsignedTC);
+  } catch (error) {
+    console.error("Error signing credentials:", error);
+  }
+
+  // console.log("Signed LRN: ", signedLRN);
+  console.log("Signed TC: ", signedTC);
+};
+
+const SecondStep = ({ activeStep, handleBack, handleNext, accountId }: any) => {
   return (
     <React.Fragment>
       <Box>
@@ -303,6 +333,9 @@ const SecondStep = ({ activeStep, handleBack, handleNext }: any) => {
         <Box sx={{ flex: "1 1 auto" }} />
         <Button onClick={handleNext} variant="contained">
           {"Submit Request"}
+        </Button>
+        <Button onClick={() => handleSign(accountId)} variant="text">
+          {"Sign"}
         </Button>
       </Box>
     </React.Fragment>

@@ -134,7 +134,7 @@ export const issueEmployeeCredential = async (
   }
 };
 
-const issueCredential = async (rawCredential: any) => {
+export const issueCredential = async (rawCredential: any) => {
   let rawCredentialString = JSON.stringify(rawCredential);
   const account = await dAppClient!.getActiveAccount();
   const proofOptions = {

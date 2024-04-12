@@ -4,10 +4,12 @@
  */
 import { joinPath } from "./utils/util";
 
-const envs = ["development"];
+const envs = ["production"];
 
 export const environment = (locationHref: string) => {
   locationHref = getRootUrl(locationHref);
+  console.log("locationHref", locationHref);
+
   return {
     requestComplianceEndpoint: (vcId?: string) =>
       joinPath(locationHref, "api", "credential-offers") +
